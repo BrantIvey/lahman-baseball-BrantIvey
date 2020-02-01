@@ -4,8 +4,45 @@ Q1. What range of years does the provided database cover?
 SELECT MIN(yearid) as first_season, MAX(yearid) as last_season, MAX(yearid)-MIN(yearid) as year_range
 FROM appearances
 
-Answer: 145 years
+Answer: 1871 through 2016
 
+QUESTION ::
+        What range of years does the provided database cover?
+
+    SOURCES ::
+        *
+
+    DIMENSIONS ::
+      
+
+    FACTS ::
+        * min year
+		* max year
+
+    FILTERS ::
+        * Only using 3 main tables from db
+
+    DESCRIPTION ::
+        Assumptions from README :: 1871 - 2016
+		
+		Do a check from the 3 main tables as specified in the data dictionary::
+			*batting, fielding, pitching
+			
+
+    ANSWER ::
+		1871 through 2016
+        ...
+
+
+
+SELECT min(yearid), max(yearid)
+FROM batting;
+
+SELECT min(yearid), max(yearid)
+FROM fielding;
+
+SELECT min(yearid), max(yearid)
+FROM pitching;
 
 Q2. Find the name and height of the shortest player in the database. How many games did he play in? What is the name of the team for which he played?
 
@@ -15,6 +52,7 @@ FROM people as p
 		ON p.playerid = a.playerid
 ORDER BY height ASC
 LIMIT (1);
+
 
 Answer: Eddie Gaedel, 43", 1 game with SLA
 
@@ -57,11 +95,25 @@ Answer:
 	Battery - 41424
 	Outfield - 29560
 	
+
+
+Q5. Find the average number of strikeouts per game by decade 
+since 1920. Round the numbers you report to 2 decimal places. 
+Do the same for home runs per game. Do you see any trends?
+
+Answer - K/game increased every decade since 70s. Homers increased similarly as well since the 70s, 2010s was down from 2000s
+potential impact of the steroid era.
+
+SELECT  trunc(yearid,-1) as year,round(sum(so)::decimal / sum(g)::decimal,2) as K_pergame_peryear
+	FROM teams
+	WHERE yearid >= 1920
+	GROUP BY year
+	ORDER BY year desc
+
+
+SELECT  trunc(yearid,-1) as decade,round(sum(hr)::decimal / sum(g)::decimal,2) as hr_pergame_peryear
+	FROM teams
+	WHERE yearid >= 1920
+	GROUP BY decade
+	ORDER BY decade desc
 */
-
-
-
-
-
-
-
