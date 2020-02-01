@@ -1,5 +1,6 @@
 /*
-Q1. What range of years does the provided database cover?
+Q1
+What range of years does the provided database cover?
 
 SELECT MIN(yearid) as first_season, MAX(yearid) as last_season, MAX(yearid)-MIN(yearid) as year_range
 FROM appearances
@@ -44,7 +45,10 @@ FROM fielding;
 SELECT min(yearid), max(yearid)
 FROM pitching;
 
-Q2. Find the name and height of the shortest player in the database. How many games did he play in? What is the name of the team for which he played?
+---
+
+Q2
+Find the name and height of the shortest player in the database. How many games did he play in? What is the name of the team for which he played?
 
 SELECT CONCAT(p.namefirst,' ', p.namelast), p.height as height, a.g_all as games, a.teamid as team
 FROM people as p
@@ -56,8 +60,10 @@ LIMIT (1);
 
 Answer: Eddie Gaedel, 43", 1 game with SLA
 
+----
 
-Q3. Find all players in the database who played at Vanderbilt University. Create a list showing each player’s first and last names 
+Q3 
+Find all players in the database who played at Vanderbilt University. Create a list showing each player’s first and last names 
 as well as the total salary they earned in the major leagues. Sort this list in descending order by the total salary earned. Which 
 Vanderbilt player earned the most money in the majors?
 
@@ -73,6 +79,9 @@ ORDER BY salary DESC;
 
 Answer: David Price - 245,553,888
 
+---
+
+Q4
 Using the fielding table, group players into three groups based on their position: label players with position OF as 
 "Outfield", those with position "SS", "1B", "2B", and "3B" as "Infield", and those with position "P" or "C" as "Battery".
 Determine the number of putouts made by each of these three groups in 2016.
@@ -95,9 +104,10 @@ Answer:
 	Battery - 41424
 	Outfield - 29560
 	
+----
 
-
-Q5. Find the average number of strikeouts per game by decade 
+Q5
+Find the average number of strikeouts per game by decade 
 since 1920. Round the numbers you report to 2 decimal places. 
 Do the same for home runs per game. Do you see any trends?
 
@@ -116,4 +126,27 @@ SELECT  trunc(yearid,-1) as decade,round(sum(hr)::decimal / sum(g)::decimal,2) a
 	WHERE yearid >= 1920
 	GROUP BY decade
 	ORDER BY decade desc
+
+----
+
+Q6.
+Find the player who had the most success stealing bases in 2016, where success is measured as the percentage of stolen base 
+attempts which are successful. (A stolen base attempt results either in a stolen base or being caught stealing.) Consider only 
+players who attempted at least 20 stolen bases.
+
+Answer -- Chris Owings
+
+
+SELECT p.namefirst,p.namelast, b.sb as total_steals,sum(b.sb+b.cs) as attempts,
+	round((b.sb/(b.sb+b.cs)::decimal*100),2) as sub_pct
+	FROM batting as b
+		JOIN people as p
+			ON b.playerid = p.playerid
+	WHERE SB >0 AND CS>0 AND yearid = 2016 AND sb+cs >=20
+	GROUP BY p.namefirst, p.namelast, b.sb, b.cs
+	ORDER BY sub_pct DESC
+	
 */
+
+
+		  
