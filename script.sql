@@ -193,4 +193,35 @@ Answer:?
 ---
 
 
+Q8
+Using the attendance figures from the homegames table, find 
+the teams and parks which had the top 5 average attendance per
+game in 2016 (where average attendance is defined as total 
+attendance divided by number of games). Only consider parks 
+where there were at least 10 games played.Report the park name,
+team name, and average attendance.
+
+SELECT park,team, games,SUM(h.attendance/h.games) as attendance_per_game
+	FROM homegames as h
+	WHERE year = 2016
+	AND games >= 10
+	GROUP BY park, team
+	ORDER BY attendance_per_game DESC
+	LIMIT 5
+
+LAD, StL,Tor, SF,CHC
+
+ Repeat for the 
+lowest 5 average attendance.
+	SELECT team, park,SUM(h.attendance/h.games) as attendance_per_game
+	FROM homegames as h
+	WHERE year = 2016
+	AND games >= 10
+	GROUP BY park, team
+	ORDER BY attendance_per_game 
+	LIMIT 5
+	
+Answer: Tampa, Oak, Cle, Mia, CHW
+
+
 */
