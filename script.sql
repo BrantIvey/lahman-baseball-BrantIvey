@@ -146,7 +146,51 @@ SELECT p.namefirst,p.namelast, b.sb as total_steals,sum(b.sb+b.cs) as attempts,
 	GROUP BY p.namefirst, p.namelast, b.sb, b.cs
 	ORDER BY sub_pct DESC
 	
+	
+----
+
+Q7
+From 1970 – 2016, what is the largest number of wins for a team that did not win the world series? What is the smallest number of 
+wins for a team that did win the world series? Doing this will probably result in an unusually small number of wins for a world 
+series champion – determine why this is the case. Then redo your query, excluding the problem year. How often from 1970 – 2016 was 
+it the case that a team with the most wins also won the world series? What percentage of the time?
+
+Answer
+Max wins 1970 - 2016 did not win WS: 116, Seattle Mariners
+	
+	SELECT teamid, yearid,MAX(w), wswin
+	FROM teams
+	WHERE yearid BETWEEN 1970 and 2016
+	AND wswin = 'N'
+	GROUP BY teamid, w,yearid,wswin
+	ORDER BY w DESC
+	LIMIT 1
+	
+Min wins 1970 - 2016 won WS: 63 wins LAD in 1981
+	SELECT teamid, yearid,MIN(w), wswin
+		FROM teams
+		WHERE yearid BETWEEN 1970 and 2016
+		AND wswin = 'Y'
+	GROUP BY teamid, w,yearid,wswin
+	ORDER BY w
+	LIMIT 1
+	
+	Redo above query eliminating problem year: St Louis 2006 83 wins
+		SELECT teamid, yearid,MIN(w), wswin
+			FROM teams
+			WHERE yearid BETWEEN 1970 and 2016
+			AND yearid <> 1981
+			AND wswin = 'Y'
+		GROUP BY teamid, w,yearid,wswin
+		ORDER BY w
+		LIMIT 1
+	
+How often between 1970 - 2016 did the team with the max number
+of wins win the WS? What percentage of the time?
+
+Answer:?
+
+---
+
+
 */
-
-
-		  
