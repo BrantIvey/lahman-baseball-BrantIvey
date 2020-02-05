@@ -184,14 +184,20 @@ Min wins 1970 - 2016 won WS: 63 wins LAD in 1981
 		GROUP BY teamid, w,yearid,wswin
 		ORDER BY w
 		LIMIT 1
-	
+*/
+/*
 How often between 1970 - 2016 did the team with the max number
 of wins win the WS? What percentage of the time?
 
 Answer:?
 
----
 
+
+
+			
+
+---
+/*
 
 Q8
 Using the attendance figures from the homegames table, find 
@@ -235,8 +241,63 @@ Which managers have won the TSN Manager of the Year award
 in both the National League (NL) and the American League (AL)?
 Give their full name and the teams that they were managing 
 when they won the award.
-*/
+
 
 --
 
+SELECT concat(p.namefirst,' ',p.namelast) as manager,awardid, yearid,lgid
+	from awardsmanagers as a
+		 join people as p
+		on a.playerid = p.playerid
+	where awardid like '%TSN%' AND lgid <>'ML'
+	group by p.playerid,awardid,yearid,lgid
+	order by manager, lgid*/
+	
+with cte1 AS(
+	SELECT 
+		playerid, awardid,lgid as AL, yearid as AL_year
+	FROM awardsmanagers
+			WHERE awardid LIKE '%TSN%' AND lgid LIKE 'AL'
+		
+),
+
+ cte2 as (
+	SELECT
+		playerid, awardid,lgid as NL, yearid as NL_year
+		FROM awardsmanagers
+			WHERE awardid LIKE '%TSN%' AND lgid LIKE 'NL'
+		
+),
+
+cte3 as (
+	SELECT
+		awardsmanagers.playerid,CONCAT(p.namefirst,' ',p.namelast) as name
+			FROM awardsmanagers
+				JOIN people as p
+				on awardsmanagers.playerid = p.playerid
+
+
+)
+
+
+
+SELECT DISTINCT (awardsmanagers.playerid), cte3.name, cte1.AL, AL_year,cte2.NL, NL_year
+	FROM awardsmanagers
+		INNER JOIN cte1
+			ON awardsmanagers.playerid = cte1.playerid
+		INNER JOIN cte2
+			ON awardsmanagers.playerid = cte2.playerid
+		INNER JOIN cte3
+			on awardsmanagers.playerid = cte3.playerid
+
+
+ANSWER
+	Jim Lealand AL - 2006; NL - 1992, 1988, 1990
+	Davey Johnson AL - 1997; NL - 2012
+	Teams?
+	
+*/
+
+	
+	
 
