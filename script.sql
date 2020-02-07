@@ -2,53 +2,17 @@
 Q1
 What range of years does the provided database cover?
 
-SELECT MIN(yearid) as first_season, MAX(yearid) as last_season, MAX(yearid)-MIN(yearid) as year_range
-FROM appearances
-
 Answer: 1871 through 2016
 
-QUESTION ::
-        What range of years does the provided database cover?
-
-    SOURCES ::
-        *
-
-    DIMENSIONS ::
-      
-
-    FACTS ::
-        * min year
-		* max year
-
-    FILTERS ::
-        * Only using 3 main tables from db
-
-    DESCRIPTION ::
-        Assumptions from README :: 1871 - 2016
-		
-		Do a check from the 3 main tables as specified in the data dictionary::
-			*batting, fielding, pitching
-			
-
-    ANSWER ::
-		1871 through 2016
-        ...
-
-
-
-SELECT min(yearid), max(yearid)
-FROM batting;
-
-SELECT min(yearid), max(yearid)
-FROM fielding;
-
-SELECT min(yearid), max(yearid)
-FROM pitching;
+SELECT MIN(yearid) as first_season, MAX(yearid) as last_season, MAX(yearid)-MIN(yearid) as year_range
+FROM appearances
 
 ---
 
 Q2
 Find the name and height of the shortest player in the database. How many games did he play in? What is the name of the team for which he played?
+
+Answer: Eddie Gaedel, 43", 1 game with SLA
 
 SELECT CONCAT(p.namefirst,' ', p.namelast), p.height as height, a.g_all as games, a.teamid as team
 FROM people as p
@@ -58,14 +22,15 @@ ORDER BY height ASC
 LIMIT (1);
 
 
-Answer: Eddie Gaedel, 43", 1 game with SLA
-
 ----
 
 Q3 
 Find all players in the database who played at Vanderbilt University. Create a list showing each player’s first and last names 
 as well as the total salary they earned in the major leagues. Sort this list in descending order by the total salary earned. Which 
 Vanderbilt player earned the most money in the majors?
+
+Answer: David Price - 245,553,888
+
 
 SELECT concat(p.namefirst,' ',p.namelast) as name, SUM(salaries.salary) as salary, c.schoolid as school
 FROM people as p
@@ -77,7 +42,6 @@ WHERE c.schoolid = 'vandy'
 GROUP BY name, school
 ORDER BY salary DESC;
 
-Answer: David Price - 245,553,888
 
 ---
 
@@ -86,6 +50,12 @@ Using the fielding table, group players into three groups based on their positio
 "Outfield", those with position "SS", "1B", "2B", and "3B" as "Infield", and those with position "P" or "C" as "Battery".
 Determine the number of putouts made by each of these three groups in 2016.
 
+Answer:
+	Infield - 58934
+	Battery - 41424
+	Outfield - 29560
+	
+	
 SELECT SUM(po) as putouts,
 	CASE WHEN pos = 'OF' THEN 'Outfield'
 		WHEN pos = 'SS' THEN 'Infield'
@@ -99,10 +69,6 @@ WHERE yearid = '2016'
 GROUP BY position
 ORDER BY putouts DESC;
 
-Answer:
-	Infield - 58934
-	Battery - 41424
-	Outfield - 29560
 	
 ----
 
@@ -136,7 +102,6 @@ players who attempted at least 20 stolen bases.
 
 Answer -- Chris Owings
 
-
 SELECT p.namefirst,p.namelast, b.sb as total_steals,sum(b.sb+b.cs) as attempts,
 	round((b.sb/(b.sb+b.cs)::decimal*100),2) as sub_pct
 	FROM batting as b
@@ -156,48 +121,72 @@ series champion – determine why this is the case. Then redo your query, exclud
 it the case that a team with the most wins also won the world series? What percentage of the time?
 
 Answer
-Max wins 1970 - 2016 did not win WS: 116, Seattle Mariners
-	
-	SELECT teamid, yearid,MAX(w), wswin
+Max wins 1970 - 2016 did not win WS: 2001 SEA 116 wins
+Min win (problem year) 1981 LAD 63 wins
+Min win (problem year removed) 2006 STL  83 wins
+
+--Max wins WS L
+
+	SELECT name, yearid,MAX(w), wswin
 	FROM teams
 	WHERE yearid BETWEEN 1970 and 2016
 	AND wswin = 'N'
-	GROUP BY teamid, w,yearid,wswin
+	GROUP BY name, w,yearid,wswin
 	ORDER BY w DESC
 	LIMIT 1
 	
-Min wins 1970 - 2016 won WS: 63 wins LAD in 1981
-	SELECT teamid, yearid,MIN(w), wswin
+--Min wins WS win
+
+	SELECT name, yearid,MIN(w), wswin
 		FROM teams
 		WHERE yearid BETWEEN 1970 and 2016
 		AND wswin = 'Y'
-	GROUP BY teamid, w,yearid,wswin
+	GROUP BY name, w,yearid,wswin
 	ORDER BY w
 	LIMIT 1
 	
-	Redo above query eliminating problem year: St Louis 2006 83 wins
-		SELECT teamid, yearid,MIN(w), wswin
+-- MIN wins WS win
+
+		SELECT name, yearid,MIN(w), wswin
 			FROM teams
 			WHERE yearid BETWEEN 1970 and 2016
 			AND yearid <> 1981
 			AND wswin = 'Y'
-		GROUP BY teamid, w,yearid,wswin
+		GROUP BY name, w,yearid,wswin
 		ORDER BY w
 		LIMIT 1
-*/
-/*
+
+
 How often between 1970 - 2016 did the team with the max number
 of wins win the WS? What percentage of the time?
 
-Answer:?
-
-
-
+Answer:26%
 
 			
+--wswin<>maxW  34 years
 
+with cte1 as (SELECT yearid, wswin, name,w as w_by_ws_champ
+	FROM teams
+	WHERE yearid between 1970 and 2016 AND wswin = 'Y'),
+	
+	cte2 as (SELECT
+			distinct yearid,max(W) as wins
+			 FROM teams
+			 group by yearid)
+			 
+SELECT cte1.yearid,cte1.wswin, cte1.name,cte1.w_by_ws_champ, cte2.wins
+	FROM teams
+		inner join cte1
+			on teams.yearid = cte1.yearid
+		inner join cte2
+			on teams.yearid = cte2.yearid
+		WHERE w_by_ws_champ <> wins
+		GROUP BY cte1.yearid,cte2.yearid, cte1.wswin,cte2.wins,cte1.name, cte1.w_by_ws_champ
+		ORDER BY yearid
+		
+		
 ---
-/*
+
 
 Q8
 Using the attendance figures from the homegames table, find 
@@ -206,6 +195,13 @@ game in 2016 (where average attendance is defined as total
 attendance divided by number of games). Only consider parks 
 where there were at least 10 games played.Report the park name,
 team name, and average attendance.
+
+ANSWER: 
+TOP 5 ATTENDANCE - LAD, StL,Tor, SF,CHC
+BOTTOM 5 ATTENDANCE - TB, OAK, CLE, MIA, CHW
+
+
+--MAX Attendance
 
 SELECT p.park_name,team, SUM(h.attendance/h.games) as attendance_per_game
 	FROM homegames as h
@@ -217,10 +213,7 @@ SELECT p.park_name,team, SUM(h.attendance/h.games) as attendance_per_game
 	ORDER BY attendance_per_game DESC
 	LIMIT 5
 
-LAD, StL,Tor, SF,CHC
-
- Repeat for the 
-lowest 5 average attendance.
+--Smallest attendance
 
 SELECT p.park_name,team,SUM(h.attendance/h.games) as attendance_per_game
 	FROM homegames as h
@@ -231,8 +224,6 @@ SELECT p.park_name,team,SUM(h.attendance/h.games) as attendance_per_game
 	GROUP BY p.park_name, team
 	ORDER BY attendance_per_game 
 	LIMIT 5 
-	
-Answer: Tampa, Oak, Cle, Mia, CHW
 
 ---
 
@@ -242,17 +233,12 @@ in both the National League (NL) and the American League (AL)?
 Give their full name and the teams that they were managing 
 when they won the award.
 
+ANSWER
+	Jim Lealand AL - 2006; NL - 1992, 1988, 1990. PIT in AL, DET in AL
+	Davey Johnson AL - 1997; NL - 2012. BAL in AL, WAS in NL
 
---
 
-SELECT concat(p.namefirst,' ',p.namelast) as manager,awardid, yearid,lgid
-	from awardsmanagers as a
-		 join people as p
-		on a.playerid = p.playerid
-	where awardid like '%TSN%' AND lgid <>'ML'
-	group by p.playerid,awardid,yearid,lgid
-	order by manager, lgid*/
-	
+-- Find the winners
 with cte1 AS(
 	SELECT 
 		playerid, awardid,lgid as AL, yearid as AL_year
@@ -266,7 +252,6 @@ with cte1 AS(
 		playerid, awardid,lgid as NL, yearid as NL_year
 		FROM awardsmanagers
 			WHERE awardid LIKE '%TSN%' AND lgid LIKE 'NL'
-		
 ),
 
 cte3 as (
@@ -275,11 +260,7 @@ cte3 as (
 			FROM awardsmanagers
 				JOIN people as p
 				on awardsmanagers.playerid = p.playerid
-
-
 )
-
-
 
 SELECT DISTINCT (awardsmanagers.playerid), cte3.name, cte1.AL, AL_year,cte2.NL, NL_year
 	FROM awardsmanagers
@@ -289,15 +270,18 @@ SELECT DISTINCT (awardsmanagers.playerid), cte3.name, cte1.AL, AL_year,cte2.NL, 
 			ON awardsmanagers.playerid = cte2.playerid
 		INNER JOIN cte3
 			on awardsmanagers.playerid = cte3.playerid
+		
+--Jim Lealand team search
 
+SELECT DISTINCT yearid,playerid, teamid
+			FROM managers
+			WHERE managers.playerid = 'leylaji99' 
+			AND managers.yearid IN (1988,1992,1990,2006)
 
-ANSWER
-	Jim Lealand AL - 2006; NL - 1992, 1988, 1990
-	Davey Johnson AL - 1997; NL - 2012
-	Teams?
-	
+--Davey Johnson team search
+
+SELECT DISTINCT yearid,playerid, teamid
+			FROM managers
+			WHERE managers.playerid = 'johnsda02' 
+			AND managers.yearid IN (1997,2012)
 */
-
-	
-	
-
