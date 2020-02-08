@@ -14,11 +14,11 @@ Find the name and height of the shortest player in the database. How many games 
 
 Answer: Eddie Gaedel, 43", 1 game with SLA
 
-SELECT CONCAT(p.namefirst,' ', p.namelast), p.height as height, a.g_all as games, a.teamid as team
+SELECT CONCAT(p.namefirst,' ', p.namelast), p.height as height_in_inches, a.g_all as games, a.teamid as team
 FROM people as p
 	JOIN appearances as a
 		ON p.playerid = a.playerid
-ORDER BY height ASC
+ORDER BY height_in_inches ASC
 LIMIT (1);
 
 
@@ -102,14 +102,14 @@ players who attempted at least 20 stolen bases.
 
 Answer -- Chris Owings
 
-SELECT p.namefirst,p.namelast, b.sb as total_steals,sum(b.sb+b.cs) as attempts,
-	round((b.sb/(b.sb+b.cs)::decimal*100),2) as sub_pct
+SELECT CONCAT(p.namefirst,' ',p.namelast) as name, b.sb as total_steals,sum(b.sb+b.cs) as attempts,
+	round((b.sb/(b.sb+b.cs)::decimal*100),2) as sb_pct
 	FROM batting as b
 		JOIN people as p
 			ON b.playerid = p.playerid
 	WHERE SB >0 AND CS>0 AND yearid = 2016 AND sb+cs >=20
-	GROUP BY p.namefirst, p.namelast, b.sb, b.cs
-	ORDER BY sub_pct DESC
+	GROUP BY name, b.sb, b.cs
+	ORDER BY sb_pct DESC
 	
 	
 ----
