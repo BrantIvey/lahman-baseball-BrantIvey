@@ -163,7 +163,7 @@ of wins win the WS? What percentage of the time?
 Answer:26%
 
 			
---wswin<>maxW  34 years
+--wswin<>maxW  12 years
 
 with cte1 as (SELECT yearid, wswin, name,w as w_by_ws_champ
 	FROM teams
@@ -215,7 +215,7 @@ SELECT p.park_name,team, SUM(h.attendance/h.games) as attendance_per_game
 
 --Smallest attendance
 
-SELECT p.park_name,team,SUM(h.attendance/h.games) as attendance_per_game
+SELECT park_name,team,SUM(attendance/games) as attendance_per_game
 	FROM homegames as h
 		JOIN parks as p
 		ON h.park = p.park
@@ -285,3 +285,67 @@ SELECT DISTINCT yearid,playerid, teamid
 			WHERE managers.playerid = 'johnsda02' 
 			AND managers.yearid IN (1997,2012)
 */
+
+
+
+WITH tsn_managers AS (
+SELECT *
+	FROM awardsmanagers
+	WHERE awardid = 'TSN Manager of the Year'
+		AND lgid IN ('AL','NL')
+),
+
+al_players AS(
+	SELECT DISTINCT playerid
+		FROM tsn_managers
+		WHERE lgid = 'AL'
+
+),
+
+nl_players AS(
+	SELECT DISTINCT playerid
+		FROM tsn_managers
+		WHERE lgid = 'NL'
+
+),
+intersected_players AS (
+	SELECT *
+	FROM al_players
+	INTERSECT
+	SELECT *
+	FROM nl_players
+)
+
+
+SELECT tm.yearid, tm.lgid,
+		m.teamid,
+		p.namefirst || ' ' || p.namelast as full_name,
+		t.name as team_name
+FROM tsn_managers as tm
+		INNER JOIN intersected_players USING (playerid)
+		INNER JOIN managers as m ON tm.playerid = m.playerid AND tm.yearid = m.yearid
+		INNER JOIN people as p on m.playerid = p.playerid
+		INNER JOIN teams as t on m.teamid = t.teamid AND tm.yearid = t.yearid
+		ORDER BY yearid
+
+	
+	
+	;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
